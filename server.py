@@ -30,8 +30,8 @@ def handle_dialog(req_obj: dict, response: dict):
     new = req_obj["session"]["new"]
 
     if new:
-        session_storage[user_id] = {"suggestions": ["Не хочу", "Не буду", "Отстань!"]}
-        response["response"]["text"] = "Привет! Купи слона!"
+        session_storage[user_id] = {"suggestions": ["Не хочу", "Не буду", "Отстань!"], "now_buying": "слон"}
+        response["response"]["text"] = f"Привет! Купи {session_storage[user_id]['now_buying']}а!"
         response["response"]["buttons"] = get_suggestions(user_id)
         return
 
@@ -43,10 +43,17 @@ def handle_dialog(req_obj: dict, response: dict):
             break
 
     if bought:
-        response["response"]["text"] = "Слона можно найти на Яндекс.Маркете!"
-        response["response"]["end_session"] = True
+        if session_storage[user_id]['now_buying'] == "слон":
+            response["response"]["text"] = "А теперь купи кролика!"
+            session_storage[user_id] = {"suggestions": ["Не хочу", "Не буду", "Отстань!"], "now_buying": "кролик"}
+            response['response']['buttons'] = get_suggestions(user_id)
+        else:
+            response["response"][
+                "text"] = f"{session_storage[user_id]['now_buying'].title()}а можно найти на Яндекс.Маркете!"
+            response["response"]["end_session"] = True
     else:
-        response['response']['text'] = f"Все говорят '{req_obj['request']['original_utterance']}', а ты купи слона!"
+        response['response']['text'] = (f"Все говорят '{req_obj['request']['original_utterance']}', "
+                                        f"а ты купи {session_storage[user_id]['now_buying']}а!")
         response['response']['buttons'] = get_suggestions(user_id)
 
 
@@ -61,7 +68,8 @@ def get_suggestions(user_id: str):
     if len(suggestions) < 2:
         suggestions.append({
             "title": "Ладно",
-            "url": "https://market.yandex.ru/search?text=слон",
+            "url": "https://market.yandex.ru/search?text=кролик" if session_storage[user_id]["now_buying"] == "кролик" \
+                else None,
             "hide": True,
         })
 
