@@ -35,7 +35,14 @@ def handle_dialog(req_obj: dict, response: dict):
         response["response"]["buttons"] = get_suggestions(user_id)
         return
 
-    if req_obj["request"]["original_utterance"].lower() in ["ладно", "куплю", "покупаю", "хорошо"]:
+    bought = False
+    utterance = req_obj["request"]["original_utterance"].lower()
+    for agreement in ["ладно", "куплю", "покупаю", "хорошо"]:
+        if agreement in utterance:
+            bought = True
+            break
+
+    if bought:
         response["response"]["text"] = "Слона можно найти на Яндекс.Маркете!"
         response["response"]["end_session"] = True
     else:
